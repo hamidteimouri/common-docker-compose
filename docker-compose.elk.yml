@@ -1,0 +1,86 @@
+version: '3.7'
+
+services:
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
+    container_name: elasticsearch
+    hostname: elasticsearch
+    restart: always
+    environment:
+      - node.master=true
+      - node.data=true
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+      - cluster.name=dev-core-cluster
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - xpack.security.enabled=true
+      - "ES_JAVA_OPTS=-Xms4G -Xmx4G"
+      - ELASTIC_PASSWORD=password
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    healthcheck:
+      test: curl -u elastic:password -s -f 127.0.0.1:9200/_cluster/health >/dev/null || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 6
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.14.1
+    container_name: kibana
+    hostname: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: password
+      ELASTICSEARCH_URL: http://elastic:9200
+      ELASTICSEARCH_HOSTS: '["http://elastic:9200"]'
+    networks:
+      - elastic
+    depends_on:
+      elastic:
+        condition: service_healthy
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.14.1
+    container_name: logstash
+    hostname: logstash
+    volumes:
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    #    ports:
+    #      - "5000:5000/tcp"
+    #      - "5000:5000/udp"
+    ports:
+      - "5044:5044"
+    healthcheck:
+      test: curl --fail http://localhost:9600 || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 6
+    environment:
+      - "LS_JAVA_OPTS=-Xmx2g -Xms2g"
+      - http.host=0.0.0.0
+      - xpack.monitoring.elasticsearch.hosts=http://elastic:9200
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.password=password
+    networks:
+      - elastic
+    depends_on:
+      elastic:
+        condition: service_healthy
+
+
+volumes:
+  elasticsearch:
+
+networks:
+  elastic:
+    driver: bridge

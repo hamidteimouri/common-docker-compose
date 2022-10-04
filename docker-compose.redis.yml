@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+  #### Redis ####
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:alpine3.13
+    # command: redis-server --requirepass $PASSWORD --appendonly yes
+    environment:
+      - PASSWORD=password
+    volumes:
+      - redis:/data
+    networks:
+      - redis
+    ports:
+      - "127.0.0.1:6379:6379"
+      #### End ####
+
+volumes:
+  redis:
+
+networks:
+  redis:
+    driver: bridge
