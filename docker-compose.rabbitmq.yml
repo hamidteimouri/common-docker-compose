@@ -1,0 +1,33 @@
+version: '3.5'
+
+services:
+  #### RabbitMQ ####
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.8.12-management-alpine
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: XLTQGNOPNMOBCYIX
+      RABBITMQ_DEFAULT_USER: rabbit_management
+      RABBITMQ_DEFAULT_PASS: rabbit_management
+    ports:
+      - "5672:5672"
+      - "15672:15672" # panel
+    networks:
+      - rabbitmq
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 60s
+      retries: 12
+  #### End ####
+
+
+volumes:
+  rabbitmq:
+
+networks:
+  rabbitmq:
+    driver: bridge
