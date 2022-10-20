@@ -17,6 +17,7 @@ services:
       - "15672:15672" # panel
     networks:
       - rabbitmq
+    restart: always
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "5672" ]
       interval: 5s
