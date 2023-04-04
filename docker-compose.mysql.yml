@@ -21,7 +21,7 @@ services:
       - mysql
     restart: always
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "password" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       retries: 3
       timeout: 5s
 
