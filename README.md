@@ -24,7 +24,7 @@ docker compose -f docker-compose.kafka.yml up -d
 - Kafka (3 nodes)
 - Kafka Zookeeper (3 nodes)
 
-To run kafka use command below:
+To run kafka-cluster use command below:
 ```shell
 docker compose -f docker-compose.kafka-cluster.yml up -d
 ```
