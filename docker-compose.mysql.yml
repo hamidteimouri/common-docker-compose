@@ -5,7 +5,7 @@ services:
   mysql:
     container_name: mysql
     hostname: mysql
-    image: mysql/mysql-server:8.0
+    image: mysql:5.7-debian
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: "%"
@@ -13,8 +13,6 @@ services:
       MYSQL_USER: myuser
       MYSQL_PASSWORD: password
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
-    volumes:
-      - 'mysql:/var/lib/mysql'
     ports:
       - "3306:3306"
     networks:

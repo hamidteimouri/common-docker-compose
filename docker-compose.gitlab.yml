@@ -1,0 +1,51 @@
+version: '2.2'
+
+services:
+  web:
+    image: 'gitlab/gitlab-ce:17.8.1-ce.0'
+    restart: always
+    hostname: 'git.mydomain.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://git.mydomain.com'
+          logging['logrotate_frequency'] = "weekly"
+          logging['logrotate_rotate'] = 52
+          logging['logrotate_compress'] = "compress"
+          logging['logrotate_method'] = "copytruncate"
+          logging['logrotate_delaycompress'] = "delaycompress"
+          nginx['redirect_http_to_https'] = true
+          nginx['ssl_certificate'] = "/etc/letsencrypt/live/git.mydomain.com/fullchain.pem"
+          nginx['ssl_certificate_key'] = "/etc/letsencrypt/live/git.mydomain.com/privkey.pem"
+          nginx['logrotate_frequency'] = "weekly"
+          nginx['logrotate_rotate'] = 52
+          nginx['logrotate_compress'] = "compress"
+          nginx['logrotate_method'] = "copytruncate"
+          nginx['logrotate_delaycompress'] = "delaycompress"
+        # Add any other gitlab.rb configuration here, each on its own line
+    ports:
+      - '127.0.0.1:8081:80'
+      - '127.0.0.1:1443:443'
+      - '22:22'
+      - '4567:4567'
+    volumes:
+      - '/srv/gitlab/config:/etc/gitlab'
+      - '/srv/gitlab/logs:/var/log/gitlab'
+      - '/srv/gitlab/data:/var/opt/gitlab'
+      - '/etc/letsencrypt:/etc/letsencrypt'
+    networks:
+      - gitlab-network
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine-v17.5.3
+    container_name: gitlab-runner
+    hostname: gitlab-runner
+    restart: always
+    volumes:
+      - './gitlab-runner-config:/etc/gitlab-runner:Z'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      - gitlab-network
+
+networks:
+  gitlab-network:
+    name: gitlab-network
